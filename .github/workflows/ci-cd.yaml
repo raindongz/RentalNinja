@@ -63,7 +63,7 @@ jobs:
 
       - name: Create AWS Lambda Function
         run: |
-          aws lambda create-function --function-name UploadPictures --runtime java17 --handler com.rundong.UploadPicturesHandler::handleRequest --role arn:aws:iam::730335295917:role/lambda-role --zip-file fileb://UploadPictures/target/UploadPictures-1.0-SNAPSHOT.jar
+          aws lambda create-function --function-name UploadPictures --runtime java17 --handler com.rundong.UploadPictures::handleRequest --role arn:aws:iam::730335295917:role/lambda-role --zip-file fileb://UploadPictures/target/UploadPictures-1.0-SNAPSHOT.jar
           aws lambda create-function --function-name UploadPost --runtime java17 --handler com.rundong.UploadPost::handleRequest --role arn:aws:iam::730335295917:role/lambda-role --zip-file fileb://UploadPost/target/UploadPost-1.0-SNAPSHOT.jar
         continue-on-error: true
 

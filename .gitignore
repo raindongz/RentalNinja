@@ -37,3 +37,7 @@ target/
 *.iws
 *.iml
 *.ipr
+
+### aws lambda
+debugEvents/
+template.yaml

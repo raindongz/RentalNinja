@@ -13,7 +13,7 @@ public class UploadPost implements RequestHandler<String, String>
     @Override
     public String handleRequest(String input, Context context) {
         LambdaLogger logger = context.getLogger();
-        logger.log("Function" + context.getFunctionName() + "is called");
+        logger.log("Function " + context.getFunctionName() + " is called");
         return input.toUpperCase();
     }
 }

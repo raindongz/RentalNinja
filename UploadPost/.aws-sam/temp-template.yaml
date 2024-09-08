@@ -1,0 +1,11 @@
+Resources:
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      Timeout: 300
+      MemorySize: 128
+      Handler: com.rundong.UploadPost::handleRequest
+      CodeUri: /Users/amdyes/Documents/Study/MyProjects/java-learn/test/RentalNinja/UploadPost
+      Runtime: java17
+      Architectures:
+        - arm64
