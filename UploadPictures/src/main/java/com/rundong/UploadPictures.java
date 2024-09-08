@@ -8,7 +8,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
  * Rundong Zhong
  *
  */
-public class UploadPicturesHandler implements RequestHandler<String, String> {
+public class UploadPictures implements RequestHandler<String, String> {
 
     @Override
     public String handleRequest(String input, Context context) {
