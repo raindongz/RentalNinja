@@ -5,7 +5,7 @@
 codeuri = "/Users/amdyes/Documents/Study/MyProjects/java-learn/test/RentalNinja/UploadPictures/target/UploadPictures-1.0-SNAPSHOT.jar"
 runtime = "java17"
 architecture = "x86_64"
-handler = "com.rundong.UploadPictures::handleRequest"
+handler = "com.rundong.GetPresignedUrl::handleRequest"
 manifest_hash = ""
 packagetype = "Zip"
 functions = ["UploadPictures"]

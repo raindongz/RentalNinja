@@ -36,7 +36,7 @@ public class UploadPost implements RequestHandler<APIGatewayProxyRequestEvent, A
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent().withHeaders(responseHeaders);
         // initialize logger
         LambdaLogger logger = context.getLogger();
-        logger.log("Function" + context.getFunctionName() + "is called", LogLevel.INFO);
+        logger.log("Function" + context.getFunctionName() + "  is called", LogLevel.INFO);
 
         Gson gson = new Gson();
         Post post = gson.fromJson(event.getBody(), Post.class);
