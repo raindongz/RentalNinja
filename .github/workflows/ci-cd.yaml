@@ -1,0 +1,72 @@
+name: AWS Lambda CI/CD
+on:
+  push:
+    branches: [main]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: '17'
+
+#      - name: Build GetMyPostList Lambda function
+#        run: |
+#          cd GetMyPostList
+#          mvn clean package -B
+#          cd ..
+#
+#      - name: Build GetPostList Lambda function
+#        run: |
+#          cd GetPostList
+#          mvn clean package -B
+#          cd ..
+#
+#      - name: Build GetSpecificPostDetail Lambda function
+#        run: |
+#          cd GetSpecificPostDetail
+#          mvn clean package -B
+#          cd ..
+#
+#      - name: Build UpdateMyPostInfo Lambda function
+#        run: |
+#          cd UpdateMyPostInfo
+#          mvn clean package -B
+#          cd ..
+
+      - name: Build UploadPictures Lambda function
+        run: |
+          cd UploadPictures
+          mvn clean package -B
+          cd ..
+
+      - name: Build UploadPost Lambda function
+        run: |
+          cd UploadPost
+          mvn clean package -B
+          cd ..
+
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::730335295917:role/github-action-lambda
+          aws-region: us-east-2
+
+      - name: Create AWS Lambda Function
+        run: |
+          aws lambda create-function --function-name UploadPictures --runtime java17 --handler com.rundong.UploadPictures.handleRequest --role arn:aws:iam::730335295917:role/lambda-role --zip-file fileb://UploadPictures/target/UploadPictures-1.0-SNAPSHOT.jar
+          aws lambda create-function --function-name UploadPost --runtime java17 --handler com.rundong.UploadPost.handleRequest --role arn:aws:iam::730335295917:role/lambda-role --zip-file fileb://UploadPost/target/UploadPost-1.0-SNAPSHOT.jar
+        continue-on-error: true
+
+      - name: Update Lambda Function
+        run: |
+          aws lambda update-function-code --function-name UploadPictures --zip-file fileb://UploadPictures/target/UploadPictures-1.0-SNAPSHOT.jar
+          aws lambda update-function-code --function-name UploadPost --zip-file fileb://UploadPost/target/UploadPost-1.0-SNAPSHOT.jar
+
+
