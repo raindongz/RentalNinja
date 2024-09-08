@@ -4,6 +4,10 @@ on:
     branches: [main]
 jobs:
   build-and-deploy:
+    permissions:
+      id-token: write # This is required for requesting the JWT
+      contents: read # This is required for actions/checkout
+
     runs-on: ubuntu-latest
     steps:
       - name: Code Checkout
