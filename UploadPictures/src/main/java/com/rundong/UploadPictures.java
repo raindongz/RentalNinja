@@ -18,6 +18,7 @@ import java.util.Map;
  */
 public class UploadPictures implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
+
     @Override
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent event, final Context context) {
         LambdaLogger logger = context.getLogger();
