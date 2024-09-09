@@ -71,9 +71,9 @@ jobs:
 
       - name: Update Lambda Function
         run: |
-          aws lambda update-function-code --function-name GetPresignedUrl --zip-file fileb://GetPresignedUrl/target/GetPresignedUrl-1.0-SNAPSHOT.jar
-          aws lambda update-function-code --function-name UploadPost --zip-file fileb://UploadPost/target/UploadPost-1.0-SNAPSHOT.jar
-          aws lambda update-function-code --function-name GetSpecificPostDetail --zip-file fileb://GetSpecificPostDetail/target/GetSpecificPostDetail-1.0-SNAPSHOT.jar
+#          aws lambda update-function-code --function-name GetPresignedUrl --zip-file fileb://GetPresignedUrl/target/GetPresignedUrl-1.0-SNAPSHOT.jar
+#          aws lambda update-function-code --function-name UploadPost --zip-file fileb://UploadPost/target/UploadPost-1.0-SNAPSHOT.jar
+#          aws lambda update-function-code --function-name GetSpecificPostDetail --zip-file fileb://GetSpecificPostDetail/target/GetSpecificPostDetail-1.0-SNAPSHOT.jar
           
 
 
