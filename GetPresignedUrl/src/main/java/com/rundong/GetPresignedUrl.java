@@ -32,11 +32,18 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
         logger.log("Function" + context.getFunctionName() + "is called", LogLevel.INFO);
 
         // Get user ID from request context
-        Object userId = event.getRequestContext().getAuthorizer();
+        Object claims = event.getRequestContext().getAuthorizer().get("claims");
+        if (!(claims instanceof Map)) {
+            //todo :throw new error
+            return new APIGatewayProxyResponseEvent()
+                    .withStatusCode(500)
+                    .withBody("internal server error!");        }
 
+        Map<String, Object> claimsMap = (Map<String, Object>) claims;
+        String username = (String)claimsMap.get("cognito:username");
 
         // Log or use the user ID as needed
-        logger.log("Authenticated User ID: " + userId, LogLevel.INFO);
+        logger.log("Authenticated User ID: " + username, LogLevel.INFO);
 
         logger.log("Generating pre-signed URL...");
 
@@ -66,7 +73,7 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("presignedUrl", preSignedUrl);
         responseBody.put("objectKey", objectKey);
-        responseBody.put("userId", userId.toString());
+        responseBody.put("userId", username);
 
         // Convert the response to JSON
         Gson gson = new Gson();
