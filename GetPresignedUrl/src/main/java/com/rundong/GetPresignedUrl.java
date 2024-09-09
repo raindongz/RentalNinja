@@ -31,11 +31,16 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
         LambdaLogger logger = context.getLogger();
         logger.log("Function" + context.getFunctionName() + "is called", LogLevel.INFO);
 
+        // Get user ID from request context
+        String userId = (String)event.getRequestContext().getAuthorizer().get("sub");
+
+        // Log or use the user ID as needed
+        logger.log("Authenticated User ID: " + userId, LogLevel.INFO);
 
         logger.log("Generating pre-signed URL...");
 
         String bucketName = "rentalninja";
-        String objectKey = "uploads/" + System.currentTimeMillis() + ".png";
+        String objectKey = System.currentTimeMillis() + ".png";
 
         // Set expiration for the pre-signed URL (e.g., 15 minutes)
         Date expiration = new Date();
@@ -60,6 +65,7 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("presignedUrl", preSignedUrl);
         responseBody.put("objectKey", objectKey);
+        responseBody.put("userId", userId);
 
         // Convert the response to JSON
         Gson gson = new Gson();
