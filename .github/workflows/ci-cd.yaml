@@ -64,8 +64,6 @@ jobs:
 
       - name: Create AWS Lambda Function
         run: |
-#          aws lambda create-function --function-name GetPresignedUrl --runtime java17 --handler com.rundong.GetPresignedUrl::handleRequest --role arn:aws:iam::730335295917:role/lambda-role --zip-file fileb://GetPresignedUrl/target/GetPresignedUrl-1.0-SNAPSHOT.jar
-#          aws lambda create-function --function-name UploadPost --runtime java17 --handler com.rundong.UploadPost::handleRequest --role arn:aws:iam::730335295917:role/lambda-role --zip-file fileb://UploadPost/target/UploadPost-1.0-SNAPSHOT.jar
           aws lambda create-function --function-name GetSpecificPostDetail --runtime java17 --handler com.rundong.GetSpecificPostDetail::handleRequest --role arn:aws:iam::730335295917:role/lambda-role --zip-file fileb://GetSpecificPostDetail/target/GetSpecificPostDetail-1.0-SNAPSHOT.jar
         continue-on-error: true
 
@@ -73,7 +71,6 @@ jobs:
         run: |
           aws lambda update-function-code --function-name GetPresignedUrl --zip-file fileb://GetPresignedUrl/target/GetPresignedUrl-1.0-SNAPSHOT.jar
           aws lambda update-function-code --function-name UploadPost --zip-file fileb://UploadPost/target/UploadPost-1.0-SNAPSHOT.jar
-#          aws lambda update-function-code --function-name GetSpecificPostDetail --zip-file fileb://GetSpecificPostDetail/target/UploadPost-1.0-SNAPSHOT.jar
           
 
 
