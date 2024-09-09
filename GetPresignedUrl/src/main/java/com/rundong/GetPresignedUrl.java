@@ -32,7 +32,8 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
         logger.log("Function" + context.getFunctionName() + "is called", LogLevel.INFO);
 
         // Get user ID from request context
-        String userId = (String)event.getRequestContext().getAuthorizer().get("sub");
+        Object userId = event.getRequestContext().getAuthorizer();
+
 
         // Log or use the user ID as needed
         logger.log("Authenticated User ID: " + userId, LogLevel.INFO);
@@ -65,7 +66,7 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("presignedUrl", preSignedUrl);
         responseBody.put("objectKey", objectKey);
-        responseBody.put("userId", userId);
+        responseBody.put("userId", userId.toString());
 
         // Convert the response to JSON
         Gson gson = new Gson();
