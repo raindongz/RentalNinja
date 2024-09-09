@@ -45,7 +45,7 @@ jobs:
 
       - name: Build GetPresignedUrl Lambda function
         run: |
-          cd UploadPictures
+          cd GetPresignedUrl
           mvn clean package -B
           cd ..
 
