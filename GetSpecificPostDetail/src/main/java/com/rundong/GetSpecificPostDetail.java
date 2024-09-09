@@ -37,6 +37,7 @@ public class GetSpecificPostDetail implements RequestHandler<APIGatewayProxyRequ
         Gson gson = new Gson();
         Request request = gson.fromJson(event.getBody(), Request.class);
         String postId = request.postId();
+        logger.log("this is post ID: " + postId, LogLevel.INFO);
 
         // get specific post from dynamodb
         Post post;
@@ -44,10 +45,10 @@ public class GetSpecificPostDetail implements RequestHandler<APIGatewayProxyRequ
              post = dynamoDBMapper.load(Post.class, postId);
         }catch (Exception e){
             //todo: throw new exception
-            logger.log("load post with postId error"+e, LogLevel.ERROR);
+            logger.log("load post with postId error "+e, LogLevel.ERROR);
             return new APIGatewayProxyResponseEvent()
                     .withHeaders(responseHeaders)
-                    .withBody("internal server error")
+                    .withBody("internal server error!!")
                     .withStatusCode(500);
         }
         // convert to json object then return to client
