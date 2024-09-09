@@ -23,7 +23,6 @@ import java.util.Map;
  */
 public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-
     private final AmazonS3 s3Client = AmazonS3ClientBuilder.defaultClient();
 
     @Override
@@ -37,16 +36,16 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
             //todo :throw new error
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(500)
-                    .withBody("internal server error!");        }
-
+                    .withBody("internal server error!");
+        }
         Map<String, Object> claimsMap = (Map<String, Object>) claims;
         String username = (String)claimsMap.get("cognito:username");
 
         // Log or use the user ID as needed
         logger.log("Authenticated User ID: " + username, LogLevel.INFO);
 
+        // generate pre-signed url
         logger.log("Generating pre-signed URL...");
-
         String bucketName = "rentalninja";
         String objectKey = System.currentTimeMillis() + ".png";
 
@@ -63,23 +62,22 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
                         .withExpiration(expiration);
 
         String preSignedUrl = s3Client.generatePresignedUrl(generatePresignedUrlRequest).toString();
-
         logger.log("Pre-signed URL generated: " + preSignedUrl);
 
-        // Prepare response
+        // Prepare response header
         Map<String, String> responseHeaders = new HashMap<>();
         responseHeaders.put("Content-Type", "application/json");
 
+        //prepare response body
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("presignedUrl", preSignedUrl);
         responseBody.put("objectKey", objectKey);
-        responseBody.put("userId", username);
 
         // Convert the response to JSON
         Gson gson = new Gson();
         String json = gson.toJson(responseBody);
 
-//        String responseBody = "{\"presignedUrl\": \"" + preSignedUrl + "\", \"objectKey\": \"" + objectKey + "\"}";
+        // String responseBody = "{\"presignedUrl\": \"" + preSignedUrl + "\", \"objectKey\": \"" + objectKey + "\"}";
 
         return new APIGatewayProxyResponseEvent()
                 .withHeaders(responseHeaders)
