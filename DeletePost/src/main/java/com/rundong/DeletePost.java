@@ -16,38 +16,64 @@ import com.google.gson.GsonBuilder;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Hello world!
  *
  */
-public class GetSpecificPostDetail implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent>
+public class DeletePost  implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent>
 {
+
     private static final AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
     private static final DynamoDBMapper dynamoDBMapper = new DynamoDBMapper(client);
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     @Override
-    public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent event, final Context context) {
-        // initialize logger
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent event, Context context) {
         LambdaLogger logger = context.getLogger();
         logger.log("Function" + context.getFunctionName() + "  is called", LogLevel.INFO);
 
-        Request request = gson.fromJson(event.getBody(), Request.class);
-        String postId = request.postId();
-        logger.log("this is post ID: " + postId, LogLevel.INFO);
+        // 1. check if post belongs to that user
+        RequestBody request = gson.fromJson(event.getBody(), RequestBody.class);
 
-        // get specific post from dynamodb
+        // 1.1. Get user ID from request context
+        Object claims = event.getRequestContext().getAuthorizer().get("claims");
+        try {
+            if (!(claims instanceof Map)) {
+                throw new RuntimeException("request authorization header claims not type of map");
+            }
+        }catch (RuntimeException e){
+            logger.log("convert claims in auth header to map failed", LogLevel.ERROR);
+            return returnApiResponse(400, "auth header not valid.", "auth header not valid.", "400", logger);
+        }
+        Map<String, Object> claimsMap = (Map<String, Object>) claims;
+        String username = (String)claimsMap.get("cognito:username");
+
+        // 1.2. get specific post
         Post post;
         try {
-             post = dynamoDBMapper.load(Post.class, postId);
+            post = dynamoDBMapper.load(Post.class, request.postId());
         }catch (Exception e){
             logger.log("load post with postId error "+e, LogLevel.ERROR);
             return returnApiResponse(500, "db error", "db error, please try again", "500", logger);
         }
-        // convert to json object then return to client
-        String json = gson.toJson(post);
 
-        return returnApiResponse(200, json, null, null, logger);
+        // 1.3 compare userId
+        if (!Objects.equals(post.getUserId(), username)){
+            logger.log("\n" + "not authorized request. userId: "+ username, LogLevel.INFO);
+            return returnApiResponse(403, "not authorized", "not authorized", "403", logger);
+        }
+
+        // 2. do logical delete
+        post.setDeleteFlag(DeleteStates.DELETED);
+        post.setUpdateTime(new Date());
+        try{
+            dynamoDBMapper.save(post);
+        }catch (Exception e){
+            logger.log("\n"+ "save delete post failed. "+"\n"+ e, LogLevel.ERROR);
+            return returnApiResponse(500, "db error", "db error", "500", logger);
+        }
+        return returnApiResponse(200, "success", null, null, logger);
     }
 
     public APIGatewayProxyResponseEvent returnApiResponse(int statusCode, String responseBody,
@@ -67,9 +93,8 @@ public class GetSpecificPostDetail implements RequestHandler<APIGatewayProxyRequ
                 .withHeaders(responseHeaders)
                 .withStatusCode(statusCode)
                 .withBody(gson.toJson(new Response<String>(statusCode, responseBody, error)));
-        logger.log("\n" + responseEvent.toString(), LogLevel.INFO);
+        logger.log("\n" + responseEvent.toString());
 
         return responseEvent;
-
     }
 }
