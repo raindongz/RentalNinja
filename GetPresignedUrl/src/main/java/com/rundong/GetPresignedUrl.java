@@ -10,7 +10,9 @@ import com.amazonaws.services.lambda.runtime.logging.LogLevel;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.amazonaws.util.StringUtils;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 
 import java.util.Date;
@@ -24,7 +26,7 @@ import java.util.Map;
 public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private final AmazonS3 s3Client = AmazonS3ClientBuilder.defaultClient();
-
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     @Override
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent event, final Context context) {
         LambdaLogger logger = context.getLogger();
@@ -32,11 +34,13 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
 
         // Get user ID from request context
         Object claims = event.getRequestContext().getAuthorizer().get("claims");
-        if (!(claims instanceof Map)) {
-            //todo :throw new error
-            return new APIGatewayProxyResponseEvent()
-                    .withStatusCode(500)
-                    .withBody("internal server error!");
+        try {
+            if (!(claims instanceof Map)) {
+                throw new RuntimeException("request authorization header claims not type of map");
+            }
+        }catch (RuntimeException e){
+            logger.log("convert claims in auth header to map failed", LogLevel.ERROR);
+            return returnApiResponse(400, "auth header not valid.", "auth header not valid.", "400", logger);
         }
         Map<String, Object> claimsMap = (Map<String, Object>) claims;
         String username = (String)claimsMap.get("cognito:username");
@@ -64,9 +68,6 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
         String preSignedUrl = s3Client.generatePresignedUrl(generatePresignedUrlRequest).toString();
         logger.log("Pre-signed URL generated: " + preSignedUrl);
 
-        // Prepare response header
-        Map<String, String> responseHeaders = new HashMap<>();
-        responseHeaders.put("Content-Type", "application/json");
 
         //prepare response body
         Map<String, String> responseBody = new HashMap<>();
@@ -74,14 +75,31 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
         responseBody.put("objectKey", objectKey);
 
         // Convert the response to JSON
-        Gson gson = new Gson();
         String json = gson.toJson(responseBody);
 
         // String responseBody = "{\"presignedUrl\": \"" + preSignedUrl + "\", \"objectKey\": \"" + objectKey + "\"}";
+        return returnApiResponse(200, json, null, null, logger);
+    }
 
-        return new APIGatewayProxyResponseEvent()
+    public APIGatewayProxyResponseEvent returnApiResponse(int statusCode, String responseBody,
+                                                          String errorMessage, String errorCode, LambdaLogger logger){
+        final Error error = new Error();
+        if(!StringUtils.isNullOrEmpty(errorCode)){
+            error.setErrorCode(errorCode);
+            error.setErrorMessage(errorMessage);
+        }
+
+        // Prepare response header
+        Map<String, String> responseHeaders = new HashMap<>();
+        responseHeaders.put("Content-Type", "application/json");
+
+        APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent()
                 .withHeaders(responseHeaders)
-                .withStatusCode(200)
-                .withBody(json);
+                .withStatusCode(statusCode)
+                .withBody(gson.toJson(new Response<String>(statusCode, responseBody, error)));
+        logger.log("\n" + responseEvent.toString(), LogLevel.INFO);
+
+        return responseEvent;
+
     }
 }
