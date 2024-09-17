@@ -34,27 +34,16 @@ Resources:
       PackageType: Image
       Code:
         ImageUri: <ECR Image URI for GetPostDetail>
-      Role: !GetAtt LambdaExecutionRole.Arn
-      MemorySize: 512
-      Timeout: 30
+      Role: !GetAtt LambdaExecutionRole-test.Arn
+      MemorySize: 128
+      Timeout: 15
 
-  # Lambda Function for Upload Post API (Using ECR)
-  UploadPostLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: upload-post
-      PackageType: Image
-      Code:
-        ImageUri: <ECR Image URI for UploadPost>
-      Role: !GetAtt LambdaExecutionRole.Arn
-      MemorySize: 512
-      Timeout: 30
 
   # Lambda Execution Role
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: LambdaExecutionRole
+      RoleName: LambdaExecutionRole-test
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -79,6 +68,7 @@ Resources:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Name: postAppApi
+    DependsOn: GetPostDetailLambda
 
   # Cognito Authorizer in API Gateway
   CognitoAuthorizer:
@@ -99,13 +89,7 @@ Resources:
       PathPart: get-post-detail
       RestApiId: !Ref ApiGatewayRestApi
 
-  # API Gateway Resource for Upload Post API
-  UploadPostResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: upload-post
-      RestApiId: !Ref ApiGatewayRestApi
+
 
   # API Gateway Method for Get Post Detail API
   GetPostDetailMethod:
@@ -115,27 +99,13 @@ Resources:
       AuthorizerId: !Ref CognitoAuthorizer
       ResourceId: !Ref GetPostDetailResource
       RestApiId: !Ref ApiGatewayRestApi
-      HttpMethod: GET
+      HttpMethod: POST
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
         Uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetPostDetailLambda.Arn}/invocations
 
-  # API Gateway Method for Upload Post API
-  UploadPostMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      AuthorizationType: COGNITO_USER_POOLS
-      AuthorizerId: !Ref CognitoAuthorizer
-      ResourceId: !Ref UploadPostResource
-      RestApiId: !Ref ApiGatewayRestApi
-      HttpMethod: POST
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UploadPostLambda.Arn}/invocations
 
   # Lambda Permissions for API Gateway to Invoke Lambda
   GetPostDetailLambdaPermission:
@@ -144,12 +114,5 @@ Resources:
       FunctionName: !Ref GetPostDetailLambda
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/GET/get-post-detail
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/get-post-detail
 
-  UploadPostLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref UploadPostLambda
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/upload-post
