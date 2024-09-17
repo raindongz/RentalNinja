@@ -19,24 +19,11 @@ jobs:
           distribution: 'corretto'
           java-version: '17'
 
-#      - name: Build GetMyPostList Lambda function
-#        run: |
-#          cd GetMyPostList
-#          mvn clean package -B
-#          cd ..
-#
-#      - name: Build GetPostList Lambda function
-#        run: |
-#          cd GetPostList
-#          mvn clean package -B
-#          cd ..
-#
-#
-#      - name: Build UpdateMyPostInfo Lambda function
-#        run: |
-#          cd UpdateMyPostInfo
-#          mvn clean package -B
-#          cd ..
+      - name: Build DeletePost Lambda function
+        run: |
+          cd DeletePost
+          mvn clean package -B
+          cd ..
 
       - name: Build GetSpecificPostDetail Lambda function
         run: |
