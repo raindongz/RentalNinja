@@ -70,7 +70,7 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
 
 
         //prepare response body
-        Map<String, String> responseBody = new HashMap<>();
+        Map<String, Object> responseBody = new HashMap<>();
         responseBody.put("presignedUrl", preSignedUrl);
         responseBody.put("objectKey", objectKey);
 

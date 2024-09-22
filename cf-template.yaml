@@ -10,6 +10,36 @@ Parameters:
       Description: cog-arn
 
 Resources:
+  # S3 Bucket
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: rentalninjia-test
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+
+  # S3 Bucket Policy
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !GetAtt LambdaExecutionRole.Arn   # Restrict access to Lambda execution role
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+            Resource:
+              - arn:aws:s3:::rentalninjia-test/*
+
+
+######
   # DynamoDB Table
   PostTable:
     Type: AWS::DynamoDB::Table
@@ -22,6 +52,9 @@ Resources:
         - AttributeName: post_id_test
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
+######
+
+
 
   # Lambda Function for Get Post Detail API (Using ECR)
   GetPresignedUrl:
@@ -72,6 +105,7 @@ Resources:
                 Resource:
                   - arn:aws:s3:::rentalninjia-test/*
 
+######
   # API Gateway
   ApiGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
@@ -167,31 +201,3 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/get-post-detail
-
-  # S3 Bucket
-  S3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: rentalninjia-test
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: false
-        BlockPublicPolicy: false
-        IgnorePublicAcls: false
-        RestrictPublicBuckets: false
-
-  # S3 Bucket Policy
-  S3BucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref S3Bucket
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !GetAtt LambdaExecutionRole.Arn   # Restrict access to Lambda execution role
-            Action:
-              - s3:GetObject
-              - s3:PutObject
-            Resource:
-              - arn:aws:s3:::rentalninjia-test/*
