@@ -40,6 +40,7 @@ jobs:
           mvn compile dependency:copy-dependencies -DincludeScope=runtime
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          echo "IMAGE=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Deploy to AWS CloudFormation
         uses: aws-actions/aws-cloudformation-github-deploy@v1
@@ -48,7 +49,7 @@ jobs:
           template: cf-template.yaml
           no-fail-on-empty-changeset: "1"
           parameter-overrides: >-
-            GetPresignedUrlImg=${{ steps.build-image-get-pres.env.REGISTRY }}/${{ steps.build-image-get-pres.env.REPOSITORY }}:${{ steps.build-image-get-pres.IMAGE_TAG }},
+            GetPresignedUrlImg=${{ steps.build-image-get-pres.outputs.IMAGE }},
             CognitoArn=arn:aws:cognito-idp:us-east-2:730335295917:userpool/us-east-2_0zgg97WG0
           capabilities: CAPABILITY_NAMED_IAM
 
