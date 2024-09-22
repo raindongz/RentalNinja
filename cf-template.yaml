@@ -33,7 +33,7 @@ Resources:
         ImageUri: !Ref GetPresignedUrlImg
       Role: !GetAtt LambdaExecutionRole.Arn
       Architectures:
-        - arm64
+        - x86_64
       MemorySize: 128
       Timeout: 15
 

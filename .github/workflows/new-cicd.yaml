@@ -19,12 +19,10 @@ jobs:
           distribution: 'corretto'
           java-version: '17'
 
-      - name: Configure AWS credentials
-        id: creds
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::730335295917:role/github-action-lambda
           aws-region: us-east-2
 
       - name: Login to Amazon ECR
