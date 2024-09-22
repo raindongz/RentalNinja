@@ -70,18 +70,18 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
 
 
         //prepare response body
-        Map<String, Object> responseBody = new HashMap<>();
+        Map<String, String> responseBody = new HashMap<>();
         responseBody.put("presignedUrl", preSignedUrl);
         responseBody.put("objectKey", objectKey);
 
         // Convert the response to JSON
-        String json = gson.toJson(responseBody);
+//        String json = gson.toJson(responseBody);
 
         // String responseBody = "{\"presignedUrl\": \"" + preSignedUrl + "\", \"objectKey\": \"" + objectKey + "\"}";
-        return returnApiResponse(200, json, null, null, logger);
+        return returnApiResponse(200, responseBody, null, null, logger);
     }
 
-    public APIGatewayProxyResponseEvent returnApiResponse(int statusCode, String responseBody,
+    public APIGatewayProxyResponseEvent returnApiResponse(int statusCode, Map<String, String> responseBody,
                                                           String errorMessage, String errorCode, LambdaLogger logger){
         final Error error = new Error();
         if(!StringUtils.isNullOrEmpty(errorCode)){
@@ -97,7 +97,7 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
         APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent()
                 .withHeaders(responseHeaders)
                 .withStatusCode(statusCode)
-                .withBody(gson.toJson(new Response<String>(statusCode, responseBody, error)));
+                .withBody(gson.toJson(new Response<Map<String, String>>(statusCode, responseBody, error)));
         logger.log("\n" + responseEvent.toString(), LogLevel.INFO);
 
         return responseEvent;
