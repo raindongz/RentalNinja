@@ -47,4 +47,5 @@ jobs:
             --stack-name my-cloudformation-stack \
             --capabilities CAPABILITY_NAMED_IAM \
             --region us-east-2
+            --parameter-overrides ParameterKey=GetPresignedUrlImg,ParameterValue=730335295917.dkr.ecr.us-east-2.amazonaws.com/rentalninja/get_presigned:latest ParameterKey=CognitoArn,ParameterValue=CognitoArn
 
