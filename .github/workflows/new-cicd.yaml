@@ -46,6 +46,6 @@ jobs:
             --template-file cf-template.yaml \
             --stack-name my-cloudformation-stack \
             --capabilities CAPABILITY_NAMED_IAM \
-            --region us-east-2
-            --parameter-overrides ParameterKey=GetPresignedUrlImg,ParameterValue=730335295917.dkr.ecr.us-east-2.amazonaws.com/rentalninja/get_presigned:latest ParameterKey=CognitoArn,ParameterValue=arn:aws:cognito-idp:us-east-2:730335295917:userpool/us-east-2_0zgg97WG0
+            --region us-east-2 \
+            --parameters ParameterKey=GetPresignedUrlImg,ParameterValue=730335295917.dkr.ecr.us-east-2.amazonaws.com/rentalninja/get_presigned:latest ParameterKey=CognitoArn,ParameterValue=arn:aws:cognito-idp:us-east-2:730335295917:userpool/us-east-2_0zgg97WG0
 
