@@ -31,6 +31,7 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent event, final Context context) {
         LambdaLogger logger = context.getLogger();
         logger.log("Function" + context.getFunctionName() + "is called", LogLevel.INFO);
+        Map<String, String> responseBody = new HashMap<>();
 
         // Get user ID from request context
         Object claims = event.getRequestContext().getAuthorizer().get("claims");
@@ -40,7 +41,8 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
             }
         }catch (RuntimeException e){
             logger.log("convert claims in auth header to map failed", LogLevel.ERROR);
-            return returnApiResponse(400, "auth header not valid.", "auth header not valid.", "400", logger);
+            responseBody.put("errorMsg", "auth header not valid.");
+            return returnApiResponse(400, responseBody, "auth header not valid.", "400", logger);
         }
         Map<String, Object> claimsMap = (Map<String, Object>) claims;
         String username = (String)claimsMap.get("cognito:username");
@@ -70,7 +72,6 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
 
 
         //prepare response body
-        Map<String, String> responseBody = new HashMap<>();
         responseBody.put("presignedUrl", preSignedUrl);
         responseBody.put("objectKey", objectKey);
 
