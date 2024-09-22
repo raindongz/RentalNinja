@@ -30,6 +30,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build GetPresignedUrl Lambda function and push to ecr
+        id: build-image-get-pres
         working-directory: GetPresignedUrl
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -47,7 +48,7 @@ jobs:
           template: cf-template.yaml
           no-fail-on-empty-changeset: "1"
           parameter-overrides: >-
-            GetPresignedUrlImg=$REPOSITORY:$IMAGE_TAG,
+            GetPresignedUrlImg=${{ env.REGISTRY }}/{{ env.REPOSITORY }}:{{ IMAGE_TAG }},
             CognitoArn=arn:aws:cognito-idp:us-east-2:730335295917:userpool/us-east-2_0zgg97WG0
           capabilities: CAPABILITY_NAMED_IAM
 
