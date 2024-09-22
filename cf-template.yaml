@@ -59,9 +59,18 @@ Resources:
                 Action:
                   - dynamodb:*
                   - logs:*
+                Resource: "*"
+
+        - PolicyName: S3AccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
                   - s3:GetObject
                   - s3:PutObject
-                Resource: "*"
+                Resource:
+                  - arn:aws:s3:::rentalninjia-test/*
 
   # API Gateway
   ApiGatewayRestApi:

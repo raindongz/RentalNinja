@@ -37,14 +37,14 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           mvn compile dependency:copy-dependencies -DincludeScope=runtime
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker build -t $REGISTRY/$REPOSITORY:latest .
+          docker push $REGISTRY/$REPOSITORY:latest
 
       - name: Deploy to AWS CloudFormation
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           name: MyStack
           template: cf-template.yaml
-          parameter-overrides: "GetPresignedUrlImg=$REGISTRY/$REPOSITORY:$IMAGE_TAG,CognitoArn=arn:aws:cognito-idp:us-east-2:730335295917:userpool/us-east-2_0zgg97WG0"
+          parameter-overrides: "GetPresignedUrlImg=730335295917.dkr.ecr.us-east-2.amazonaws.com/rentalninja/get_presigned:latest,CognitoArn=arn:aws:cognito-idp:us-east-2:730335295917:userpool/us-east-2_0zgg97WG0"
           capabilities: CAPABILITY_NAMED_IAM
 
