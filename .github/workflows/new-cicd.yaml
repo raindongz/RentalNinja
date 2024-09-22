@@ -40,12 +40,13 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:latest .
           docker push $REGISTRY/$REPOSITORY:latest
 
-      - name: Deploy CloudFormation
-        run: |
-          aws cloudformation deploy \
-            --template-file cf-template.yaml \
-            --stack-name my-cloudformation-stack \
-            --capabilities CAPABILITY_NAMED_IAM \
-            --region us-east-2 \
-            --parameters ParameterKey=GetPresignedUrlImg,ParameterValue=730335295917.dkr.ecr.us-east-2.amazonaws.com/rentalninja/get_presigned:latest ParameterKey=CognitoArn,ParameterValue=arn:aws:cognito-idp:us-east-2:730335295917:userpool/us-east-2_0zgg97WG0
+      - name: Deploy to AWS CloudFormation
+        uses: aws-actions/aws-cloudformation-github-deploy@v1
+        with:
+          name: MyStack
+          template: cf-template.yaml
+          no-fail-on-empty-changeset: "1"
+          parameter-overrides: "GetPresignedUrlImg=730335295917.dkr.ecr.us-east-2.amazonaws.com/rentalninja/get_presigned:latest,CognitoArn=arn:aws:cognito-idp:us-east-2:730335295917:userpool/us-east-2_0zgg97WG0"
+          capabilities: CAPABILITY_NAMED_IAM
+
 
