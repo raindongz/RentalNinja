@@ -46,4 +46,5 @@ jobs:
           name: MyStack
           template: cf-template.yaml
           parameter-overrides: "GetPresignedUrlImg=730335295917.dkr.ecr.us-east-2.amazonaws.com/rentalninja/get_presigned:latest,CognitoArn=arn:aws:cognito-idp:us-east-2:730335295917:userpool/us-east-2_0zgg97WG0"
+          capabilities: github-action-lambda
 
