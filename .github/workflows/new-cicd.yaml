@@ -19,10 +19,12 @@ jobs:
           distribution: 'corretto'
           java-version: '17'
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Configure AWS credentials
+        id: creds
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: arn:aws:iam::730335295917:role/github-action-lambda
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
 
       - name: Login to Amazon ECR
@@ -46,7 +48,7 @@ jobs:
           name: MyStack
           template: cf-template.yaml
           no-fail-on-empty-changeset: "1"
-          parameter-overrides: "GetPresignedUrlImg=730335295917.dkr.ecr.us-east-2.amazonaws.com/rentalninja/get_presigned:latest"
+          parameter-overrides: "GetPresignedUrlImg=730335295917.dkr.ecr.us-east-2.amazonaws.com/rentalninja/get_presigned:latest,CognitoArn=arn:aws:cognito-idp:us-east-2:730335295917:userpool/us-east-2_0zgg97WG0"
           capabilities: CAPABILITY_NAMED_IAM
 
 
