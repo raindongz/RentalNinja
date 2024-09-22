@@ -1,4 +1,14 @@
 AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  GetPresignedUrlImg:
+    Type: String
+    Description: ECR Image URI for GetPostDetail Lambda
+
+  CognitoArn:
+      Type: String
+      Description: cog-arn
+
 Resources:
   # DynamoDB Table
   PostTable:
@@ -13,28 +23,17 @@ Resources:
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
 
-  # Cognito User Pool
-  CognitoUserPool:
-    Type: AWS::Cognito::UserPool
-    Properties:
-      UserPoolName: rentalninja-test
-
-  # Cognito User Pool Client
-  CognitoUserPoolClient:
-    Type: AWS::Cognito::UserPoolClient
-    Properties:
-      ClientName: rentalninja-test
-      UserPoolId: !Ref CognitoUserPool
-
   # Lambda Function for Get Post Detail API (Using ECR)
-  GetPostDetailLambda:
+  GetPresignedUrl:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: get-post-detail
       PackageType: Image
       Code:
-        ImageUri: <ECR Image URI for GetPostDetail>
-      Role: !GetAtt LambdaExecutionRole-test.Arn
+        ImageUri: !Ref GetPresignedUrlImg
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Architectures:
+        - arm64
       MemorySize: 128
       Timeout: 15
 
@@ -43,7 +42,7 @@ Resources:
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: LambdaExecutionRole-test
+      RoleName: LambdaExecutionRole-test-cf
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -52,7 +51,7 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: LambdaExecutionPolicy
+        - PolicyName: dynamodb_and_cloudwatch
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -60,15 +59,28 @@ Resources:
                 Action:
                   - dynamodb:*
                   - logs:*
-                  - s3:*
                 Resource: "*"
+
+        - PolicyName: S3AccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource:
+                  - arn:aws:s3:::rentalninjia-test/*
 
   # API Gateway
   ApiGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Name: postAppApi
-    DependsOn: GetPostDetailLambda
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+    DependsOn: GetPresignedUrl
 
   # Cognito Authorizer in API Gateway
   CognitoAuthorizer:
@@ -79,7 +91,7 @@ Resources:
       Type: COGNITO_USER_POOLS
       IdentitySource: method.request.header.Authorization
       ProviderARNs:
-        - !GetAtt CognitoUserPool.Arn
+        - !Ref CognitoArn
 
   # API Gateway Resource for Get Post Detail API
   GetPostDetailResource:
@@ -88,7 +100,6 @@ Resources:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
       PathPart: get-post-detail
       RestApiId: !Ref ApiGatewayRestApi
-
 
 
   # API Gateway Method for Get Post Detail API
@@ -104,15 +115,42 @@ Resources:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
         Uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetPostDetailLambda.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetPresignedUrl.Arn}/invocations
 
 
   # Lambda Permissions for API Gateway to Invoke Lambda
   GetPostDetailLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref GetPostDetailLambda
+      FunctionName: !Ref GetPresignedUrl
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/get-post-detail
 
+  # S3 Bucket
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: rentalninjia-test
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+
+  # S3 Bucket Policy
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !GetAtt LambdaExecutionRole.Arn   # Restrict access to Lambda execution role
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+            Resource:
+              - arn:aws:s3:::rentalninjia-test/*
