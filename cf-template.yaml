@@ -5,23 +5,23 @@ Parameters:
     Type: String
     Description: ECR Image URI for GetPostDetail Lambda
 
-  CognitoArn:
-      Type: String
-      Description: cog-arn
+#  CognitoArn:
+#      Type: String
+#      Description: cog-arn
 
 Resources:
   # DynamoDB Table
-  PostTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: posts_test
-      AttributeDefinitions:
-        - AttributeName: post_id_test
-          AttributeType: S
-      KeySchema:
-        - AttributeName: post_id_test
-          KeyType: HASH
-      BillingMode: PAY_PER_REQUEST
+#  PostTable:
+#    Type: AWS::DynamoDB::Table
+#    Properties:
+#      TableName: posts_test
+#      AttributeDefinitions:
+#        - AttributeName: post_id_test
+#          AttributeType: S
+#      KeySchema:
+#        - AttributeName: post_id_test
+#          KeyType: HASH
+#      BillingMode: PAY_PER_REQUEST
 
   # Lambda Function for Get Post Detail API (Using ECR)
   GetPresignedUrl:
@@ -39,118 +39,118 @@ Resources:
 
 
   # Lambda Execution Role
-  LambdaExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: LambdaExecutionRole-test-cf
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: dynamodb_and_cloudwatch
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - dynamodb:*
-                  - logs:*
-                Resource: "*"
-
-        - PolicyName: S3AccessPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                  - s3:PutObject
-                Resource:
-                  - arn:aws:s3:::rentalninjia-test/*
-
-  # API Gateway
-  ApiGatewayRestApi:
-    Type: AWS::ApiGateway::RestApi
-    Properties:
-      Name: postAppApi
-      EndpointConfiguration:
-        Types:
-          - REGIONAL
-    DependsOn: GetPresignedUrl
-
-  # Cognito Authorizer in API Gateway
-  CognitoAuthorizer:
-    Type: AWS::ApiGateway::Authorizer
-    Properties:
-      Name: CognitoAuthorizer
-      RestApiId: !Ref ApiGatewayRestApi
-      Type: COGNITO_USER_POOLS
-      IdentitySource: method.request.header.Authorization
-      ProviderARNs:
-        - !Ref CognitoArn
-
-  # API Gateway Resource for Get Post Detail API
-  GetPostDetailResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: get-post-detail
-      RestApiId: !Ref ApiGatewayRestApi
-
-
-  # API Gateway Method for Get Post Detail API
-  GetPostDetailMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      AuthorizationType: COGNITO_USER_POOLS
-      AuthorizerId: !Ref CognitoAuthorizer
-      ResourceId: !Ref GetPostDetailResource
-      RestApiId: !Ref ApiGatewayRestApi
-      HttpMethod: POST
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetPresignedUrl.Arn}/invocations
-
-
-  # Lambda Permissions for API Gateway to Invoke Lambda
-  GetPostDetailLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref GetPresignedUrl
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/get-post-detail
-
-  # S3 Bucket
-  S3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: rentalninjia-test
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: false
-        BlockPublicPolicy: false
-        IgnorePublicAcls: false
-        RestrictPublicBuckets: false
-
-  # S3 Bucket Policy
-  S3BucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref S3Bucket
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !GetAtt LambdaExecutionRole.Arn   # Restrict access to Lambda execution role
-            Action:
-              - s3:GetObject
-              - s3:PutObject
-            Resource:
-              - arn:aws:s3:::rentalninjia-test/*
+#  LambdaExecutionRole:
+#    Type: AWS::IAM::Role
+#    Properties:
+#      RoleName: LambdaExecutionRole-test-cf
+#      AssumeRolePolicyDocument:
+#        Version: '2012-10-17'
+#        Statement:
+#          - Effect: Allow
+#            Principal:
+#              Service: lambda.amazonaws.com
+#            Action: sts:AssumeRole
+#      Policies:
+#        - PolicyName: dynamodb_and_cloudwatch
+#          PolicyDocument:
+#            Version: '2012-10-17'
+#            Statement:
+#              - Effect: Allow
+#                Action:
+#                  - dynamodb:*
+#                  - logs:*
+#                Resource: "*"
+#
+#        - PolicyName: S3AccessPolicy
+#          PolicyDocument:
+#            Version: '2012-10-17'
+#            Statement:
+#              - Effect: Allow
+#                Action:
+#                  - s3:GetObject
+#                  - s3:PutObject
+#                Resource:
+#                  - arn:aws:s3:::rentalninjia-test/*
+#
+#  # API Gateway
+#  ApiGatewayRestApi:
+#    Type: AWS::ApiGateway::RestApi
+#    Properties:
+#      Name: postAppApi
+#      EndpointConfiguration:
+#        Types:
+#          - REGIONAL
+#    DependsOn: GetPresignedUrl
+#
+#  # Cognito Authorizer in API Gateway
+#  CognitoAuthorizer:
+#    Type: AWS::ApiGateway::Authorizer
+#    Properties:
+#      Name: CognitoAuthorizer
+#      RestApiId: !Ref ApiGatewayRestApi
+#      Type: COGNITO_USER_POOLS
+#      IdentitySource: method.request.header.Authorization
+#      ProviderARNs:
+#        - !Ref CognitoArn
+#
+#  # API Gateway Resource for Get Post Detail API
+#  GetPostDetailResource:
+#    Type: AWS::ApiGateway::Resource
+#    Properties:
+#      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+#      PathPart: get-post-detail
+#      RestApiId: !Ref ApiGatewayRestApi
+#
+#
+#  # API Gateway Method for Get Post Detail API
+#  GetPostDetailMethod:
+#    Type: AWS::ApiGateway::Method
+#    Properties:
+#      AuthorizationType: COGNITO_USER_POOLS
+#      AuthorizerId: !Ref CognitoAuthorizer
+#      ResourceId: !Ref GetPostDetailResource
+#      RestApiId: !Ref ApiGatewayRestApi
+#      HttpMethod: POST
+#      Integration:
+#        Type: AWS_PROXY
+#        IntegrationHttpMethod: POST
+#        Uri:
+#          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetPresignedUrl.Arn}/invocations
+#
+#
+#  # Lambda Permissions for API Gateway to Invoke Lambda
+#  GetPostDetailLambdaPermission:
+#    Type: AWS::Lambda::Permission
+#    Properties:
+#      FunctionName: !Ref GetPresignedUrl
+#      Action: lambda:InvokeFunction
+#      Principal: apigateway.amazonaws.com
+#      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/get-post-detail
+#
+#  # S3 Bucket
+#  S3Bucket:
+#    Type: AWS::S3::Bucket
+#    Properties:
+#      BucketName: rentalninjia-test
+#      PublicAccessBlockConfiguration:
+#        BlockPublicAcls: false
+#        BlockPublicPolicy: false
+#        IgnorePublicAcls: false
+#        RestrictPublicBuckets: false
+#
+#  # S3 Bucket Policy
+#  S3BucketPolicy:
+#    Type: AWS::S3::BucketPolicy
+#    Properties:
+#      Bucket: !Ref S3Bucket
+#      PolicyDocument:
+#        Version: '2012-10-17'
+#        Statement:
+#          - Effect: Allow
+#            Principal:
+#              AWS: !GetAtt LambdaExecutionRole.Arn   # Restrict access to Lambda execution role
+#            Action:
+#              - s3:GetObject
+#              - s3:PutObject
+#            Resource:
+#              - arn:aws:s3:::rentalninjia-test/*
