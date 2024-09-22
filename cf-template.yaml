@@ -31,7 +31,6 @@ Resources:
       PackageType: Image
       Code:
         ImageUri: !Ref GetPresignedUrlImg
-      Role: !GetAtt LambdaExecutionRole.Arn
       Architectures:
         - arm64
       MemorySize: 128
