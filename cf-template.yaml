@@ -9,7 +9,7 @@ Parameters:
     Type: String
     Description: ECR Image URI for GetPostDetail Lambda
 
-  UploadPost:
+  UploadPostImg:
     Type: String
     Description: ECR Image URI for UploadPost Lambda
 
@@ -97,7 +97,7 @@ Resources:
       FunctionName: upload-post
       PackageType: Image
       Code:
-        ImageUri: !Ref UploadPost
+        ImageUri: !Ref UploadPostImg
       Role: !GetAtt LambdaExecutionRole.Arn
       Architectures:
         - x86_64
