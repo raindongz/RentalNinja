@@ -3,6 +3,10 @@ AWSTemplateFormatVersion: '2010-09-09'
 Parameters:
   GetPresignedUrlImg:
     Type: String
+    Description: ECR Image URI for getpresigned Lambda
+
+  GetPostDetailImg:
+    Type: String
     Description: ECR Image URI for GetPostDetail Lambda
 
   CognitoArn:
@@ -60,10 +64,23 @@ Resources:
   GetPresignedUrl:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: get-post-detail
+      FunctionName: get-presigned-url
       PackageType: Image
       Code:
         ImageUri: !Ref GetPresignedUrlImg
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 15
+
+  GetPostDetail:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: get-post-detail
+      PackageType: Image
+      Code:
+        ImageUri: !Ref GetPostDetailImg
       Role: !GetAtt LambdaExecutionRole.Arn
       Architectures:
         - x86_64
@@ -114,7 +131,9 @@ Resources:
       EndpointConfiguration:
         Types:
           - REGIONAL
-    DependsOn: GetPresignedUrl
+    DependsOn:
+      - GetPresignedUrl
+      - GetPostDetail
 
   # Cognito Authorizer in API Gateway
   CognitoAuthorizer:
@@ -127,7 +146,25 @@ Resources:
       ProviderARNs:
         - !Ref CognitoArn
 
+  # API Gateway Deployment
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - GetPresignedUrlMethod   # Ensure methods are created before deployment
+      - GetPresignedOptionsMethod
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      StageName: test-cf
+
+
   # API Gateway Resource for Get Post Detail API
+  GetPresignedUrlResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: get-presigned-url
+      RestApiId: !Ref ApiGatewayRestApi
+
   GetPostDetailResource:
     Type: AWS::ApiGateway::Resource
     Properties:
@@ -135,6 +172,65 @@ Resources:
       PathPart: get-post-detail
       RestApiId: !Ref ApiGatewayRestApi
 
+
+  # API Gateway Method for Get Post Detail API
+  GetPresignedUrlMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      ResourceId: !Ref GetPresignedUrlResource
+      RestApiId: !Ref ApiGatewayRestApi
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetPresignedUrl.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  # OPTIONS Method for CORS
+  GetPresignedOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      ResourceId: !Ref GetPostDetailResource
+      RestApiId: !Ref ApiGatewayRestApi
+      HttpMethod: OPTIONS
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{ "statusCode": 200 }'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+
+  # Lambda Permissions for API Gateway to Invoke Lambda
+  GetPresignedUrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetPresignedUrl
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/get-presigned-url
+
+
+### Function2
 
   # API Gateway Method for Get Post Detail API
   GetPostDetailMethod:
@@ -149,7 +245,7 @@ Resources:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
         Uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetPresignedUrl.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetPostDetail.Arn}/invocations
       MethodResponses:
         - StatusCode: 200
           ResponseParameters:
@@ -183,21 +279,11 @@ Resources:
             method.response.header.Access-Control-Allow-Methods: true
 
 
-  # API Gateway Deployment
-  ApiGatewayDeployment:
-    Type: AWS::ApiGateway::Deployment
-    DependsOn:
-      - GetPostDetailMethod   # Ensure methods are created before deployment
-      - GetPostDetailOptionsMethod
-    Properties:
-      RestApiId: !Ref ApiGatewayRestApi
-      StageName: test-cf
-
   # Lambda Permissions for API Gateway to Invoke Lambda
-  GetPostDetailLambdaPermission:
+  GetPostDetailPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref GetPresignedUrl
+      FunctionName: !Ref GetPostDetail
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/get-post-detail
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/gget-post-detail
