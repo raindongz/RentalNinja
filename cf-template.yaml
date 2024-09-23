@@ -199,7 +199,7 @@ Resources:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
-      ResourceId: !Ref GetPostDetailResource
+      ResourceId: !Ref GetPresignedUrlResource
       RestApiId: !Ref ApiGatewayRestApi
       HttpMethod: OPTIONS
       Integration:
