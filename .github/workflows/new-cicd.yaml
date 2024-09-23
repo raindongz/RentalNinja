@@ -64,7 +64,7 @@ jobs:
           no-fail-on-empty-changeset: "1"
           parameter-overrides: >-
             GetPresignedUrlImg=${{ steps.build-image-get-pres.outputs.IMAGE }},
-            GetPostDetailImg=${{ steps.build-image-get-post.outputs }}
+            GetPostDetailImg=${{ steps.build-image-get-post.outputs.IMAGE }},
             CognitoArn=arn:aws:cognito-idp:us-east-2:730335295917:userpool/us-east-2_0zgg97WG0
           capabilities: CAPABILITY_NAMED_IAM
 
