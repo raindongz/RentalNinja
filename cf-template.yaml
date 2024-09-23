@@ -9,6 +9,10 @@ Parameters:
     Type: String
     Description: ECR Image URI for GetPostDetail Lambda
 
+  UploadPost:
+    Type: String
+    Description: ECR Image URI for UploadPost Lambda
+
   CognitoArn:
       Type: String
       Description: cog-arn
@@ -87,6 +91,19 @@ Resources:
       MemorySize: 128
       Timeout: 15
 
+  UploadPost:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: upload-post
+      PackageType: Image
+      Code:
+        ImageUri: !Ref UploadPost
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 15
+
 
   # Lambda Execution Role
   LambdaExecutionRole:
@@ -134,6 +151,7 @@ Resources:
     DependsOn:
       - GetPresignedUrl
       - GetPostDetail
+      - UploadPost
 
   # Cognito Authorizer in API Gateway
   CognitoAuthorizer:
@@ -157,7 +175,7 @@ Resources:
       StageName: test-cf
 
 
-  # API Gateway Resource for Get Post Detail API
+  # API Gateway Resource for get presigned url API
   GetPresignedUrlResource:
     Type: AWS::ApiGateway::Resource
     Properties:
@@ -165,6 +183,7 @@ Resources:
       PathPart: get-presigned-url
       RestApiId: !Ref ApiGatewayRestApi
 
+  # API Gateway Resource for Get Post Detail API
   GetPostDetailResource:
     Type: AWS::ApiGateway::Resource
     Properties:
@@ -172,6 +191,15 @@ Resources:
       PathPart: get-post-detail
       RestApiId: !Ref ApiGatewayRestApi
 
+  # API Gateway Resource for Upload Post API
+  UploadPostResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: upload-post
+      RestApiId: !Ref ApiGatewayRestApi
+
+### Function1
 
   # API Gateway Method for Get Post Detail API
   GetPresignedUrlMethod:
@@ -287,3 +315,60 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/get-post-detail
+
+### Function 3
+  # API Gateway Method for Upload Post API
+  UploadPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      ResourceId: !Ref UploadPostResource
+      RestApiId: !Ref ApiGatewayRestApi
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UploadPost.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  # OPTIONS Method for CORS
+  UploadPostOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      ResourceId: !Ref UploadPostResource
+      RestApiId: !Ref ApiGatewayRestApi
+      HttpMethod: OPTIONS
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{ "statusCode": 200 }'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+
+  # Lambda Permissions for API Gateway to Invoke Lambda
+  UploadPostPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UploadPost
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/upload-post
