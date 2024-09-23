@@ -79,7 +79,7 @@ jobs:
           parameter-overrides: >-
             GetPresignedUrlImg=${{ steps.build-image-get-pres.outputs.IMAGE }},
             GetPostDetailImg=${{ steps.build-image-get-post.outputs.IMAGE }},
-            UploadPost=${{ steps.build-image-upload-post.outputs.IMAGE }},
+            UploadPostImg=${{ steps.build-image-upload-post.outputs.IMAGE }},
             CognitoArn=arn:aws:cognito-idp:us-east-2:730335295917:userpool/us-east-2_0zgg97WG0
           capabilities: CAPABILITY_NAMED_IAM
 
