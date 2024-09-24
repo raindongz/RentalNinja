@@ -43,7 +43,8 @@
       <artifactId>aws-java-sdk-dynamodb</artifactId>
       <version>1.12.771</version>
     </dependency>
-  </dependencies>  <build>
+  </dependencies>
+  <build>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

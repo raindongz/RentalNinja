@@ -66,6 +66,7 @@ public class GetSpecificPostDetail implements RequestHandler<APIGatewayProxyRequ
         Map<String, String> responseHeaders = new HashMap<>();
         responseHeaders.put("Content-Type", "application/json");
         responseHeaders.put("X-Custom-Header", "application/json");
+        responseHeaders.put("Access-Control-Allow-Origin", "*");
 
         APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent()
                 .withHeaders(responseHeaders)

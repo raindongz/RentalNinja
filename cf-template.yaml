@@ -13,9 +13,17 @@ Parameters:
     Type: String
     Description: ECR Image URI for UploadPost Lambda
 
+  DeletePostImg:
+    Type: String
+    Description: ECR Image URI for DeletePost Lambda
+
+  GetPostListImg:
+    Type: String
+    Description: ECR Image URI for DeletePost Lambda
+
   CognitoArn:
-      Type: String
-      Description: cog-arn
+    Type: String
+    Description: cog-arn
 
 Resources:
   # S3 Bucket
@@ -47,7 +55,7 @@ Resources:
               - arn:aws:s3:::rentalninjia-test/*
 
 
-######
+  ######
   # DynamoDB Table
   PostTable:
     Type: AWS::DynamoDB::Table
@@ -60,7 +68,7 @@ Resources:
         - AttributeName: post_id_test
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
-######
+  ######
 
 
 
@@ -104,6 +112,32 @@ Resources:
       MemorySize: 128
       Timeout: 15
 
+  DeletePost:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: delete-post
+      PackageType: Image
+      Code:
+        ImageUri: !Ref DeletePostImg
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 15
+
+  GetPostList:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: get-post-list
+      PackageType: Image
+      Code:
+        ImageUri: !Ref GetPostListImg
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 15
+
 
   # Lambda Execution Role
   LambdaExecutionRole:
@@ -139,7 +173,7 @@ Resources:
                 Resource:
                   - arn:aws:s3:::rentalninjia-test/*
 
-######
+  ######
   # API Gateway
   ApiGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
@@ -152,6 +186,8 @@ Resources:
       - GetPresignedUrl
       - GetPostDetail
       - UploadPost
+      - DeletePost
+      - GetPostList
 
   # Cognito Authorizer in API Gateway
   CognitoAuthorizer:
@@ -170,6 +206,12 @@ Resources:
     DependsOn:
       - GetPresignedUrlMethod   # Ensure methods are created before deployment
       - GetPresignedOptionsMethod
+      - GetPostDetailMethod
+      - GetPostDetailOptionsMethod
+      - UploadPostMethod
+      - UploadPostOptionsMethod
+      - DeletePostMethod
+      - DeletePostOptionsMethod
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
       StageName: test-cf
@@ -199,7 +241,23 @@ Resources:
       PathPart: upload-post
       RestApiId: !Ref ApiGatewayRestApi
 
-### Function1
+  # API Gateway Resource for Upload Post API
+  DeletePostResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: delete-post
+      RestApiId: !Ref ApiGatewayRestApi
+
+  # API Gateway Resource for Upload Post API
+  GetPostListResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: get-post-list
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ### Function1
 
   # API Gateway Method for Get Post Detail API
   GetPresignedUrlMethod:
@@ -258,7 +316,7 @@ Resources:
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/get-presigned-url
 
 
-### Function2
+  ### Function2
 
   # API Gateway Method for Get Post Detail API
   GetPostDetailMethod:
@@ -316,7 +374,7 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/get-post-detail
 
-### Function 3
+  ### Function 3
   # API Gateway Method for Upload Post API
   UploadPostMethod:
     Type: AWS::ApiGateway::Method
@@ -372,3 +430,118 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/upload-post
+
+
+  ### Function 4
+  # API Gateway Method for Delete Post API
+  DeletePostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      ResourceId: !Ref DeletePostResource
+      RestApiId: !Ref ApiGatewayRestApi
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeletePost.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  # OPTIONS Method for CORS
+  DeletePostOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      ResourceId: !Ref DeletePostResource
+      RestApiId: !Ref ApiGatewayRestApi
+      HttpMethod: OPTIONS
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{ "statusCode": 200 }'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+
+  # Lambda Permissions for API Gateway to Invoke Lambda
+  DeletePostPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DeletePost
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/delete-post
+
+  ### Function 5
+  # API Gateway Method for Get Post List API
+  GetPostListMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      ResourceId: !Ref GetPostListResource
+      RestApiId: !Ref ApiGatewayRestApi
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetPostListResource.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  # OPTIONS Method for CORS
+  GetPostListOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      ResourceId: !Ref GetPostListResource
+      RestApiId: !Ref ApiGatewayRestApi
+      HttpMethod: OPTIONS
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{ "statusCode": 200 }'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+
+  # Lambda Permissions for API Gateway to Invoke Lambda
+  GetPostListPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetPostList
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/get-post-list
