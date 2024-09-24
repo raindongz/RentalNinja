@@ -89,7 +89,7 @@ public class GetPostList implements RequestHandler<APIGatewayProxyRequestEvent, 
         APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent()
                 .withHeaders(responseHeaders)
                 .withStatusCode(statusCode)
-                .withBody(gson.toJson(new Response<Map<String, String>>(statusCode, responseBody, error)));
+                .withBody(gson.toJson(new Response<Map<String, Object>>(statusCode, responseBody, error)));
         logger.log("\n" + responseEvent.toString(), LogLevel.INFO);
 
         return responseEvent;
