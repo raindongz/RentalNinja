@@ -35,7 +35,7 @@ public class GetPostList implements RequestHandler<APIGatewayProxyRequestEvent, 
 
         SearchParam searchParam = gson.fromJson(event.getBody(), SearchParam.class);
         // validate the body
-        if (searchParam.pageNum()<1 || searchParam.pageSize()<1){
+        if (searchParam.pageNum()<0 || searchParam.pageSize()<1){
             logger.log("page info not valid", LogLevel.ERROR);
             responseBody.put("errorMsg", "need valid page info");
             return returnApiResponse(500, responseBody, "need valid page info", "500", logger);
