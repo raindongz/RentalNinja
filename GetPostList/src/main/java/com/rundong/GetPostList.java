@@ -59,7 +59,7 @@ public class GetPostList implements RequestHandler<APIGatewayProxyRequestEvent, 
                 .toList();
         // pagination
         int fromIdx = (searchParam.pageNum()-1) * searchParam.pageSize();
-        int toIdx = (searchParam.pageNum()-1) * searchParam.pageSize() + (searchParam.pageSize()-1);
+        int toIdx = ((searchParam.pageNum()-1) * searchParam.pageSize()) + (searchParam.pageSize()-1);
         if (fromIdx > collect.size()){
             logger.log("invalid page start index", LogLevel.ERROR);
             responseBody.put("errorMsg", "invalid page start index");
