@@ -97,6 +97,19 @@ jobs:
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
           echo "IMAGE=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
 
+      - name: Build GetMyList Lambda function and push to ecr
+        id: build-image-get-my-list
+        working-directory: GetMyPostList
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: rentalninja/get_my_list
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          mvn compile dependency:copy-dependencies -DincludeScope=runtime
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          echo "IMAGE=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+
 
       - name: Deploy to AWS CloudFormation
         uses: aws-actions/aws-cloudformation-github-deploy@v1
@@ -110,6 +123,7 @@ jobs:
             UploadPostImg=${{ steps.build-image-upload-post.outputs.IMAGE }},
             DeletePostImg=${{ steps.build-image-delete-post.outputs.IMAGE }},
             GetPostListImg=${{ steps.build-image-get-post-list.outputs.IMAGE }},
+            GetMyListImg=${{ steps.build-image-get-my-list.outputs.IMAGE }},
             CognitoArn=arn:aws:cognito-idp:us-east-2:730335295917:userpool/us-east-2_0zgg97WG0
           capabilities: CAPABILITY_NAMED_IAM
 
