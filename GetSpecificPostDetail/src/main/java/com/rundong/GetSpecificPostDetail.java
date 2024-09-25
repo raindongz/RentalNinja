@@ -74,6 +74,5 @@ public class GetSpecificPostDetail implements RequestHandler<APIGatewayProxyRequ
         logger.log("\n" + responseEvent.toString(), LogLevel.INFO);
 
         return responseEvent;
-
     }
 }
