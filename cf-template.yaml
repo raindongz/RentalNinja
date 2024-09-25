@@ -212,6 +212,8 @@ Resources:
       - UploadPostOptionsMethod
       - DeletePostMethod
       - DeletePostOptionsMethod
+      - GetPostListMethod
+      - GetPostListOptionsMethod
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
       StageName: test-cf
@@ -503,7 +505,7 @@ Resources:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
         Uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetPostListResource.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetPostList.Arn}/invocations
       MethodResponses:
         - StatusCode: 200
           ResponseParameters:
