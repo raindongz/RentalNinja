@@ -272,8 +272,8 @@ Resources:
       - GetMyListOptionsMethod
       - UpdateMyPostInfoMethod
       - UpdateMyPostInfoOptionsMethod
-      -
-      -
+      - AddCollectionMethod
+      - AddCollectionOptionsMethod
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
       StageName: test-cf
