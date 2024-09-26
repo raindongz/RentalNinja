@@ -29,6 +29,10 @@ Parameters:
     Type: String
     Description: ECR Image URI for GetMyList Lambda
 
+  AddCollectionImg:
+    Type: String
+    Description: ECR Image URI for AddCollection Lambda
+
   CognitoArn:
     Type: String
     Description: cog-arn
@@ -172,6 +176,19 @@ Resources:
       MemorySize: 128
       Timeout: 15
 
+  AddCollection:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: add-collection
+      PackageType: Image
+      Code:
+        ImageUri: !Ref AddCollectionImg
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 15
+
 
   # Lambda Execution Role
   LambdaExecutionRole:
@@ -224,6 +241,7 @@ Resources:
       - GetPostList
       - GetMyList
       - UpdateMyPostInfo
+      - AddCollection
 
   # Cognito Authorizer in API Gateway
   CognitoAuthorizer:
@@ -254,6 +272,8 @@ Resources:
       - GetMyListOptionsMethod
       - UpdateMyPostInfoMethod
       - UpdateMyPostInfoOptionsMethod
+      -
+      -
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
       StageName: test-cf
@@ -313,8 +333,14 @@ Resources:
       PathPart: update-my-post
       RestApiId: !Ref ApiGatewayRestApi
 
-  ### Function1
+  AddCollectionResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: add-collection
+      RestApiId: !Ref ApiGatewayRestApi
 
+  ### Function1
   # API Gateway Method for Get Post Detail API
   GetPresignedUrlMethod:
     Type: AWS::ApiGateway::Method
@@ -717,3 +743,60 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/update-my-post
+
+  ### Function 7
+  # API Gateway Method for Get Post List API
+  AddCollectionMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      ResourceId: !Ref AddCollectionResource
+      RestApiId: !Ref ApiGatewayRestApi
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddCollection.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  # OPTIONS Method for CORS
+  AddCollectionOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      ResourceId: !Ref AddCollectionResource
+      RestApiId: !Ref ApiGatewayRestApi
+      HttpMethod: OPTIONS
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{ "statusCode": 200 }'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+
+  # Lambda Permissions for API Gateway to Invoke Lambda
+  AddCollectionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref AddCollection
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/add-collection
