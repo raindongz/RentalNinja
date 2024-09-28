@@ -98,6 +98,9 @@ public class GetPostList implements RequestHandler<APIGatewayProxyRequestEvent, 
         if (toIdx >= collect.size()){
             toIdx = collect.size()-1;
         }
+        if (fromIdx > toIdx){
+            toIdx = fromIdx;
+        }
         List<Post> paginatedPosts = collect.subList(fromIdx, toIdx);
         responseBody.put("post_list", paginatedPosts);
         return returnApiResponse(200, responseBody, null, null, logger);
