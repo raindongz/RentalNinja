@@ -51,6 +51,7 @@ public class GetPostList implements RequestHandler<APIGatewayProxyRequestEvent, 
         // 1. both keywords stateCode and cityCode exist
         if ( !searchParam.keyword().isEmpty() && !searchParam.stateCode().isEmpty() && !searchParam.cityCode().isEmpty()){
             collect = postList.stream()
+                    .filter(post -> post.getStateCode() != null && post.getCityCode() != null)
                     .filter(post -> post.getStateCode().equals(searchParam.stateCode())
                             && post.getCityCode().equals(searchParam.cityCode()))
                     .filter(post -> post.getContent() != null && post.getContent().contains(searchParam.keyword()))
@@ -58,21 +59,25 @@ public class GetPostList implements RequestHandler<APIGatewayProxyRequestEvent, 
         }else if (!searchParam.keyword().isEmpty() && searchParam.stateCode().isEmpty()){
             // 2. keywords exist other two null
             collect = postList.stream()
+                    .filter(post -> post.getContent() != null)
                     .filter(post -> post.getContent().contains(searchParam.keyword()))
                     .toList();
         } else if (!searchParam.keyword().isEmpty()) {
             // 3. keywords exists, stateCode exist, cityCode null
             collect = postList.stream()
+                    .filter(post -> post.getStateCode() != null && post.getContent() != null)
                     .filter(post -> post.getStateCode().equals(searchParam.stateCode()) && post.getContent().contains(searchParam.keyword()))
                     .toList();
         } else if (!searchParam.stateCode().isEmpty() && !searchParam.cityCode().isEmpty()) {
             // 4. keywords null, stateCode exist, cityCode exists
             collect = postList.stream()
+                    .filter(post -> post.getStateCode() != null && post.getCityCode() != null)
                     .filter(post -> post.getStateCode().equals(searchParam.stateCode()) && post.getCityCode().equals(searchParam.cityCode()))
                     .toList();
         }else if (!searchParam.stateCode().isEmpty()){
             // 5. keywords null, stateCode exists, cityCode null
             collect = postList.stream()
+                    .filter(post -> post.getStateCode() != null)
                     .filter(post -> post.getStateCode().equals(searchParam.stateCode()))
                     .toList();
         }else {

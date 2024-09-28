@@ -1,6 +1,10 @@
 package com.rundong;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -25,6 +29,12 @@ public class UploadPost implements RequestHandler<APIGatewayProxyRequestEvent, A
 
 
     private static final AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
+
+//    private static final AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
+//            .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration("http://172.21.0.2:8000", "us-east-2"))
+//            .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("1234567", "asdfghjkl")))
+//            .build();
+
     private static final DynamoDBMapper dynamoDBMapper = new DynamoDBMapper(client);
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -35,6 +45,14 @@ public class UploadPost implements RequestHandler<APIGatewayProxyRequestEvent, A
         logger.log("Function" + context.getFunctionName() + "  is called", LogLevel.INFO);
 
         Post post = gson.fromJson(event.getBody(), Post.class);
+        if (post.getTitle().isEmpty()){
+            return returnApiResponse(400, null, "invalid request", "400", logger);
+        }else if (post.getContent().isEmpty()){
+            return returnApiResponse(400, null, "invalid request", "400", logger);
+        }else if (post.getContactInfo().isEmpty()){
+            return returnApiResponse(400, null, "invalid request", "400", logger);
+        }
+
         post.setCreateTime(new Date());
         post.setUpdateTime(new Date());
         post.setDeleteFlag(DeleteStates.ACTIVE);

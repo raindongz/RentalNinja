@@ -44,3 +44,4 @@ template.yaml
 .aws-sam/
 # Ignore everything named .aws in any directory
 !**/.aws-sam/
+event.json

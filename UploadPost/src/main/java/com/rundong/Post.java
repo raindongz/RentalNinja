@@ -30,13 +30,13 @@ public class Post {
     private String picUrls;
 
     @DynamoDBAttribute(attributeName = "country_code")
-    private String country;
+    private String countryCode;
 
     @DynamoDBAttribute(attributeName = "state_code")
-    private String state;
+    private String stateCode;
 
     @DynamoDBAttribute(attributeName = "city_code")
-    private String city;
+    private String cityCode;
 
     /**
      * optional, can be something like Allston, downtown
@@ -56,104 +56,120 @@ public class Post {
     @DynamoDBAttribute(attributeName = "delete_flag")
     private Integer deleteFlag;
 
-    public String getPostId() {
-        return postId;
+    public Post(String postId, String userId, String title, String content, String contactInfo, String picUrls, String countryCode, String stateCode, String cityCode, String area, Date createTime, Date updateTime, Integer deleteFlag) {
+        this.postId = postId;
+        this.userId = userId;
+        this.title = title;
+        this.content = content;
+        this.contactInfo = contactInfo;
+        this.picUrls = picUrls;
+        this.countryCode = countryCode;
+        this.stateCode = stateCode;
+        this.cityCode = cityCode;
+        this.area = area;
+        this.createTime = createTime;
+        this.updateTime = updateTime;
+        this.deleteFlag = deleteFlag;
     }
 
-    public void setPostId(String postId) {
-        this.postId = postId;
+    public String getPostId() {
+        return postId;
     }
 
     public String getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
     public String getTitle() {
         return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public String getContent() {
         return content;
     }
 
-    public void setContent(String content) {
-        this.content = content;
-    }
-
     public String getContactInfo() {
         return contactInfo;
-    }
-
-    public void setContactInfo(String contactInfo) {
-        this.contactInfo = contactInfo;
     }
 
     public String getPicUrls() {
         return picUrls;
     }
 
-    public void setPicUrls(String picUrls) {
-        this.picUrls = picUrls;
+    public String getCountryCode() {
+        return countryCode;
     }
 
-    public String getCountry() {
-        return country;
+    public String getStateCode() {
+        return stateCode;
     }
 
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
+    public String getCityCode() {
+        return cityCode;
     }
 
     public String getArea() {
         return area;
     }
 
-    public void setArea(String area) {
-        this.area = area;
-    }
-
     public Date getCreateTime() {
         return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
     }
 
     public Date getUpdateTime() {
         return updateTime;
     }
 
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
-
     public Integer getDeleteFlag() {
         return deleteFlag;
+    }
+
+    public void setPostId(String postId) {
+        this.postId = postId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setContactInfo(String contactInfo) {
+        this.contactInfo = contactInfo;
+    }
+
+    public void setPicUrls(String picUrls) {
+        this.picUrls = picUrls;
+    }
+
+    public void setCountryCode(String countryCode) {
+        this.countryCode = countryCode;
+    }
+
+    public void setStateCode(String stateCode) {
+        this.stateCode = stateCode;
+    }
+
+    public void setCityCode(String cityCode) {
+        this.cityCode = cityCode;
+    }
+
+    public void setArea(String area) {
+        this.area = area;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
     }
 
     public void setDeleteFlag(Integer deleteFlag) {
