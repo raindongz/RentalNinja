@@ -53,6 +53,10 @@ public class AddCollection implements RequestHandler<APIGatewayProxyRequestEvent
 //        List<Collection> result = dynamoDBMapper.query(Collection.class, queryExpression);
 
         Request request = gson.fromJson(event.getBody(), Request.class);
+        if (request.postId().isEmpty()){
+            logger.log("postId can not be null " + request, LogLevel.ERROR);
+            return returnApiResponse(400, null, "post id can not be empty", "400", logger);
+        }
         if(request.isAdd() == 1){
             Collection collection = new Collection();
             collection.setUserId(username);
@@ -62,6 +66,7 @@ public class AddCollection implements RequestHandler<APIGatewayProxyRequestEvent
                 dynamoDBMapper.save(collection);
             }catch (Exception e){
                 logger.log("save collection to dynamodb error:  " + e, LogLevel.ERROR);
+                logger.log("postId is: "+ collection.getPostId() + "   "+ collection.getUserId() );
                 return returnApiResponse(500, null, "duplicate collect", "500", logger);
             }
         }else {
