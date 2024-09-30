@@ -38,6 +38,11 @@ public class GetSpecificPostDetail implements RequestHandler<APIGatewayProxyRequ
         String postId = request.postId();
         logger.log("this is post ID: " + postId, LogLevel.INFO);
 
+        if (postId == null || postId.isEmpty()){
+            logger.log("post id not present", LogLevel.ERROR);
+            return returnApiResponse(400, null, "post id not present", "400", logger);
+        }
+
         // get specific post from dynamodb
         Post post;
         try {
