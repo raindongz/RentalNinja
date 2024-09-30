@@ -34,6 +34,7 @@ public class GetSpecificPostDetail implements RequestHandler<APIGatewayProxyRequ
         Map<String, Object> responseBody = new HashMap<>();
 
         Request request = gson.fromJson(event.getBody(), Request.class);
+        logger.log("request body: " + request, LogLevel.INFO);
         String postId = request.postId();
         logger.log("this is post ID: " + postId, LogLevel.INFO);
 

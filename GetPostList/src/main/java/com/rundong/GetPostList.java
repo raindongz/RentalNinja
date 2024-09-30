@@ -38,8 +38,25 @@ public class GetPostList implements RequestHandler<APIGatewayProxyRequestEvent, 
             responseBody.put("errorMsg", "need valid page info");
             return returnApiResponse(500, responseBody, "need valid page info", "500", logger);
         }
+        //get user info
+        Object claims = event.getRequestContext().getAuthorizer().get("claims");
+        try {
+            if (!(claims instanceof Map)) {
+                throw new RuntimeException("request authorization header claims not type of map");
+            }
+        }catch (RuntimeException e){
+            logger.log("convert claims in auth header to map failed", LogLevel.ERROR);
+            responseBody.put("errorMsg", "auth header not valid.");
+            return returnApiResponse(400, responseBody, "auth header not valid.", "400", logger);
+        }
+        Map<String, Object> claimsMap = (Map<String, Object>) claims;
+        String username = (String)claimsMap.get("cognito:username");
+
         List<Post> postList = dynamoDBMapper.scan(Post.class, new DynamoDBScanExpression());
         List<Post> collect;
+
+        // get my list of post id
+        List<String> myPostIds = postList.stream().filter(post -> post.getUserId() != null && post.getUserId().equals(username)).map(Post::getPostId).toList();
 
         // check invalid value set
         if (searchParam.stateCode().isEmpty() && !searchParam.cityCode().isEmpty()){
@@ -55,36 +72,78 @@ public class GetPostList implements RequestHandler<APIGatewayProxyRequestEvent, 
                     .filter(post -> post.getStateCode().equals(searchParam.stateCode())
                             && post.getCityCode().equals(searchParam.cityCode()))
                     .filter(post -> post.getContent() != null && post.getContent().contains(searchParam.keyword()))
+                    .peek(post -> {
+                        if (!myPostIds.isEmpty() && myPostIds.contains(post.getPostId())) {
+                            post.setIsFavorite(1);
+                        } else {
+                            post.setIsFavorite(0);
+                        }
+                    })
                     .toList();
         }else if (!searchParam.keyword().isEmpty() && searchParam.stateCode().isEmpty()){
             // 2. keywords exist other two null
             collect = postList.stream()
                     .filter(post -> post.getContent() != null)
                     .filter(post -> post.getContent().contains(searchParam.keyword()))
+                    .peek(post -> {
+                        if (!myPostIds.isEmpty() && myPostIds.contains(post.getPostId())) {
+                            post.setIsFavorite(1);
+                        } else {
+                            post.setIsFavorite(0);
+                        }
+                    })
                     .toList();
         } else if (!searchParam.keyword().isEmpty()) {
             // 3. keywords exists, stateCode exist, cityCode null
             collect = postList.stream()
                     .filter(post -> post.getStateCode() != null && post.getContent() != null)
                     .filter(post -> post.getStateCode().equals(searchParam.stateCode()) && post.getContent().contains(searchParam.keyword()))
+                    .peek(post -> {
+                        if (!myPostIds.isEmpty() && myPostIds.contains(post.getPostId())) {
+                            post.setIsFavorite(1);
+                        } else {
+                            post.setIsFavorite(0);
+                        }
+                    })
                     .toList();
         } else if (!searchParam.stateCode().isEmpty() && !searchParam.cityCode().isEmpty()) {
             // 4. keywords null, stateCode exist, cityCode exists
             collect = postList.stream()
                     .filter(post -> post.getStateCode() != null && post.getCityCode() != null)
                     .filter(post -> post.getStateCode().equals(searchParam.stateCode()) && post.getCityCode().equals(searchParam.cityCode()))
+                    .peek(post -> {
+                        if (!myPostIds.isEmpty() && myPostIds.contains(post.getPostId())) {
+                            post.setIsFavorite(1);
+                        } else {
+                            post.setIsFavorite(0);
+                        }
+                    })
                     .toList();
         }else if (!searchParam.stateCode().isEmpty()){
             // 5. keywords null, stateCode exists, cityCode null
             collect = postList.stream()
                     .filter(post -> post.getStateCode() != null)
                     .filter(post -> post.getStateCode().equals(searchParam.stateCode()))
+                    .peek(post -> {
+                        if (!myPostIds.isEmpty() && myPostIds.contains(post.getPostId())) {
+                            post.setIsFavorite(1);
+                        } else {
+                            post.setIsFavorite(0);
+                        }
+                    })
                     .toList();
         }else {
             // 6. both keywords and stateCode and cityCode is null
             collect = postList.stream()
                     .filter(post -> post.getDeleteFlag() == 0)
                     .sorted(Comparator.comparing(Post::getUpdateTime).reversed())
+                    .peek(post -> {
+                        if (!myPostIds.isEmpty() && myPostIds.contains(post.getPostId())) {
+                            post.setIsFavorite(1);
+                        } else {
+                            post.setIsFavorite(0);
+                        }
+                    })
                     .toList();
         }
         // pagination

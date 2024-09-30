@@ -1,4 +1,6 @@
 package com.rundong;
 
-public record Request(String postId) {
+import com.google.gson.annotations.SerializedName;
+
+public record Request(@SerializedName(value = "postId") String postId) {
 }
