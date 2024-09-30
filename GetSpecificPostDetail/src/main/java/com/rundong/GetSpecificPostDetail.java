@@ -33,6 +33,19 @@ public class GetSpecificPostDetail implements RequestHandler<APIGatewayProxyRequ
         logger.log("Function" + context.getFunctionName() + "  is called", LogLevel.INFO);
         Map<String, Object> responseBody = new HashMap<>();
 
+        Object claims = event.getRequestContext().getAuthorizer().get("claims");
+        try {
+            if (!(claims instanceof Map)) {
+                throw new RuntimeException("request authorization header claims not type of map");
+            }
+        }catch (RuntimeException e){
+            logger.log("convert claims in auth header to map failed", LogLevel.ERROR);
+            responseBody.put("errorMsg", "auth header not valid.");
+            return returnApiResponse(400, responseBody, "auth header not valid.", "400", logger);
+        }
+        Map<String, Object> claimsMap = (Map<String, Object>) claims;
+        String username = (String)claimsMap.get("cognito:username");
+
         Request request = gson.fromJson(event.getBody(), Request.class);
         logger.log("request body: " + request, LogLevel.INFO);
         String postId = request.postId();
@@ -52,8 +65,16 @@ public class GetSpecificPostDetail implements RequestHandler<APIGatewayProxyRequ
             responseBody.put("errorMsg", "db error");
             return returnApiResponse(500, responseBody, "db error, please try again", "500", logger);
         }
-        // convert to json object then return to client
-//        String json = gson.toJson(post);
+
+        try {
+            Collection myFavorite = dynamoDBMapper.load(Collection.class, username, postId);
+            if (myFavorite != null){
+                post.setIsFavorite(1);
+            }
+        }catch (Exception e){
+            logger.log("load collection with postId error "+e, LogLevel.ERROR);
+            return returnApiResponse(500, null, "get my favorite failed", "500", logger);
+        }
 
         //prepare response body
         responseBody.put("post", post);
