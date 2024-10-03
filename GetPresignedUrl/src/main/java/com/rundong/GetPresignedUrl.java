@@ -73,7 +73,7 @@ public class GetPresignedUrl implements RequestHandler<APIGatewayProxyRequestEve
 
         //prepare response body
         responseBody.put("presignedUrl", preSignedUrl);
-        responseBody.put("objectKey", objectKey);
+        responseBody.put("objectKey", "https://rentalninja.s3.us-east-2.amazonaws.com/"+ objectKey);
 
         // Convert the response to JSON
 //        String json = gson.toJson(responseBody);
