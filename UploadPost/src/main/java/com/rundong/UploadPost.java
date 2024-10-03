@@ -58,11 +58,11 @@ public class UploadPost implements RequestHandler<APIGatewayProxyRequestEvent, A
         String username = (String)claimsMap.get("cognito:username");
 
         Post post = gson.fromJson(event.getBody(), Post.class);
-        if (post.getTitle().isEmpty()){
+        if (post.getTitle() == null || post.getTitle().isEmpty()){
             return returnApiResponse(400, null, "invalid request", "400", logger);
-        }else if (post.getContent().isEmpty()){
+        }else if (post.getContent() == null || post.getContent().isEmpty()){
             return returnApiResponse(400, null, "invalid request", "400", logger);
-        }else if (post.getContactInfo().isEmpty()){
+        }else if (post.getContactInfo()==null || post.getContactInfo().isEmpty()){
             return returnApiResponse(400, null, "invalid request", "400", logger);
         }else if (username.isEmpty()){
             return returnApiResponse(400, null, "invalid request", "400", logger);
