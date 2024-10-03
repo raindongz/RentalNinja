@@ -44,6 +44,19 @@ public class UploadPost implements RequestHandler<APIGatewayProxyRequestEvent, A
         LambdaLogger logger = context.getLogger();
         logger.log("Function" + context.getFunctionName() + "  is called", LogLevel.INFO);
 
+        // Get user ID from request context
+        Object claims = event.getRequestContext().getAuthorizer().get("claims");
+        try {
+            if (!(claims instanceof Map)) {
+                throw new RuntimeException("request authorization header claims not type of map");
+            }
+        }catch (RuntimeException e){
+            logger.log("convert claims in auth header to map failed", LogLevel.ERROR);
+            return returnApiResponse(400, null, "auth header not valid.", "400", logger);
+        }
+        Map<String, Object> claimsMap = (Map<String, Object>) claims;
+        String username = (String)claimsMap.get("cognito:username");
+
         Post post = gson.fromJson(event.getBody(), Post.class);
         if (post.getTitle().isEmpty()){
             return returnApiResponse(400, null, "invalid request", "400", logger);
@@ -51,8 +64,10 @@ public class UploadPost implements RequestHandler<APIGatewayProxyRequestEvent, A
             return returnApiResponse(400, null, "invalid request", "400", logger);
         }else if (post.getContactInfo().isEmpty()){
             return returnApiResponse(400, null, "invalid request", "400", logger);
+        }else if (username.isEmpty()){
+            return returnApiResponse(400, null, "invalid request", "400", logger);
         }
-
+        post.setUserId(username);
         post.setCreateTime(new Date());
         post.setUpdateTime(new Date());
         post.setDeleteFlag(DeleteStates.ACTIVE);

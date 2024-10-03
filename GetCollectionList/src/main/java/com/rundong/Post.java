@@ -56,6 +56,15 @@ public class Post {
     @DynamoDBAttribute(attributeName = "delete_flag")
     private Integer deleteFlag;
 
+    private int isFavorite;
+    public int getIsFavorite() {
+        return isFavorite;
+    }
+
+    public void setIsFavorite(int isFavorite) {
+        this.isFavorite = isFavorite;
+    }
+
     public String getPostId() {
         return postId;
     }
