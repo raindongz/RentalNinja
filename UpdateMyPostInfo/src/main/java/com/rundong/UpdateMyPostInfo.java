@@ -65,15 +65,26 @@ public class UpdateMyPostInfo implements RequestHandler<APIGatewayProxyRequestEv
             return returnApiResponse(403, null, "not authorized", "403", logger);
         }
 
+        if (post.getTitle() == null || post.getTitle().isEmpty()){
+            return returnApiResponse(400, null, "invalid request", "400", logger);
+        }else if (post.getContent() == null || post.getContent().isEmpty()){
+            return returnApiResponse(400, null, "invalid request", "400", logger);
+        }else if (post.getContactInfo()==null || post.getContactInfo().isEmpty()){
+            return returnApiResponse(400, null, "invalid request", "400", logger);
+        }else if (username.isEmpty()){
+            return returnApiResponse(400, null, "invalid request", "400", logger);
+        }
+
         // 2. do update post
         post.setTitle(request.title());
         post.setContent(request.content());
         post.setContactInfo(request.contactInfo());
         post.setPicUrls(request.picUrls());
-        post.setCountry(request.country());
-        post.setState(request.state());
-        post.setCity(request.city());
+        post.setCountryCode(request.country());
+        post.setStateCode(request.state());
+        post.setCityCode(request.city());
         post.setArea(request.area());
+        post.setPrice(request.price());
         post.setUpdateTime(new Date());
         try{
             dynamoDBMapper.save(post);

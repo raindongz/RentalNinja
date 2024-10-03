@@ -33,10 +33,10 @@ public class Post {
     private String country;
 
     @DynamoDBAttribute(attributeName = "state_code")
-    private String stateCode;
+    private String state;
 
     @DynamoDBAttribute(attributeName = "city_code")
-    private String cityCode;
+    private String city;
 
     /**
      * optional, can be something like Allston, downtown
@@ -55,6 +55,27 @@ public class Post {
      */
     @DynamoDBAttribute(attributeName = "delete_flag")
     private Integer deleteFlag;
+
+    @DynamoDBAttribute(attributeName = "price")
+    private int price ;
+
+
+    private int isFavorite;
+    public int getIsFavorite() {
+        return isFavorite;
+    }
+
+    public void setIsFavorite(int isFavorite) {
+        this.isFavorite = isFavorite;
+    }
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    public int getPrice() {
+        return price;
+    }
+
 
     public String getPostId() {
         return postId;
@@ -112,20 +133,20 @@ public class Post {
         this.country = country;
     }
 
-    public String getStateCode() {
-        return stateCode;
+    public String getState() {
+        return state;
     }
 
-    public void setStateCode(String state) {
-        this.stateCode = state;
+    public void setState(String state) {
+        this.state = state;
     }
 
-    public String getCityCode() {
-        return cityCode;
+    public String getCity() {
+        return city;
     }
 
-    public void setCityCode(String city) {
-        this.cityCode = city;
+    public void setCity(String city) {
+        this.city = city;
     }
 
     public String getArea() {

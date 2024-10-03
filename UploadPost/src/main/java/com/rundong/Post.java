@@ -44,6 +44,9 @@ public class Post {
     @DynamoDBAttribute(attributeName = "area")
     private String area;
 
+    @DynamoDBAttribute(attributeName = "price")
+    private int price ;
+
     @DynamoDBAttribute(attributeName = "create_time")
     private Date createTime;
 
@@ -72,6 +75,13 @@ public class Post {
         this.deleteFlag = deleteFlag;
     }
 
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    public int getPrice() {
+        return price;
+    }
     public String getPostId() {
         return postId;
     }

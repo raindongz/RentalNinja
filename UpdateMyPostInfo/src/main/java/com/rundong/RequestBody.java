@@ -8,6 +8,9 @@ public record RequestBody(String postId,
                           String country,
                           String state,
                           String city,
-                          String area) {
+                          String area,
+
+                          int price
+                          ) {
 
 }

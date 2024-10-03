@@ -50,6 +50,10 @@ public class Post {
     @DynamoDBAttribute(attributeName = "update_time")
     private Date updateTime;
 
+    @DynamoDBAttribute(attributeName = "price")
+    private int price ;
+
+
     /**
      * 0: active, 1: deleted
      */
@@ -60,7 +64,13 @@ public class Post {
     public int getIsFavorite() {
         return isFavorite;
     }
+    public void setPrice(int price) {
+        this.price = price;
+    }
 
+    public int getPrice() {
+        return price;
+    }
     public void setIsFavorite(int isFavorite) {
         this.isFavorite = isFavorite;
     }

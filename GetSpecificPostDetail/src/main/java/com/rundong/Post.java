@@ -56,6 +56,10 @@ public class Post {
     @DynamoDBAttribute(attributeName = "delete_flag")
     private Integer deleteFlag;
 
+    @DynamoDBAttribute(attributeName = "price")
+    private int price ;
+
+
     private int isFavorite;
     public int getIsFavorite() {
         return isFavorite;
@@ -64,7 +68,13 @@ public class Post {
     public void setIsFavorite(int isFavorite) {
         this.isFavorite = isFavorite;
     }
+    public void setPrice(int price) {
+        this.price = price;
+    }
 
+    public int getPrice() {
+        return price;
+    }
 
 
     public String getPostId() {
