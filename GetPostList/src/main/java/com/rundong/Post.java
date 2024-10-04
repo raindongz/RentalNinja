@@ -59,91 +59,6 @@ public class Post {
     @DynamoDBAttribute(attributeName = "delete_flag")
     private Integer deleteFlag;
 
-    private int isFavorite;
-    public int getIsFavorite() {
-        return isFavorite;
-    }
-
-    public void setIsFavorite(int isFavorite) {
-        this.isFavorite = isFavorite;
-    }
-
-
-    public Post(String postId, String userId, String title, String content, String contactInfo, String picUrls, String countryCode, String stateCode, String cityCode, String area, Date createTime, Date updateTime, Integer deleteFlag) {
-        this.postId = postId;
-        this.userId = userId;
-        this.title = title;
-        this.content = content;
-        this.contactInfo = contactInfo;
-        this.picUrls = picUrls;
-        this.countryCode = countryCode;
-        this.stateCode = stateCode;
-        this.cityCode = cityCode;
-        this.area = area;
-        this.createTime = createTime;
-        this.updateTime = updateTime;
-        this.deleteFlag = deleteFlag;
-    }
-
-    public void setPrice(int price) {
-        this.price = price;
-    }
-
-    public int getPrice() {
-        return price;
-    }
-    public String getPostId() {
-        return postId;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public String getContactInfo() {
-        return contactInfo;
-    }
-
-    public String getPicUrls() {
-        return picUrls;
-    }
-
-    public String getCountryCode() {
-        return countryCode;
-    }
-
-    public String getStateCode() {
-        return stateCode;
-    }
-
-    public String getCityCode() {
-        return cityCode;
-    }
-
-    public String getArea() {
-        return area;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    public Integer getDeleteFlag() {
-        return deleteFlag;
-    }
-
     public void setPostId(String postId) {
         this.postId = postId;
     }
@@ -184,6 +99,10 @@ public class Post {
         this.area = area;
     }
 
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
@@ -195,4 +114,70 @@ public class Post {
     public void setDeleteFlag(Integer deleteFlag) {
         this.deleteFlag = deleteFlag;
     }
+
+    public void setIsFavorite(int isFavorite) {
+        this.isFavorite = isFavorite;
+    }
+
+    public String getPostId() {
+        return postId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public String getContactInfo() {
+        return contactInfo;
+    }
+
+    public String getPicUrls() {
+        return picUrls;
+    }
+
+    public String getCountryCode() {
+        return countryCode;
+    }
+
+    public String getStateCode() {
+        return stateCode;
+    }
+
+    public String getCityCode() {
+        return cityCode;
+    }
+
+    public String getArea() {
+        return area;
+    }
+
+    public int getPrice() {
+        return price;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public Integer getDeleteFlag() {
+        return deleteFlag;
+    }
+
+    public int getIsFavorite() {
+        return isFavorite;
+    }
+
+    private int isFavorite;
 }
