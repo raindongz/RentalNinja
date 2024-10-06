@@ -80,9 +80,9 @@ public class UpdateMyPostInfo implements RequestHandler<APIGatewayProxyRequestEv
         post.setContent(request.content());
         post.setContactInfo(request.contactInfo());
         post.setPicUrls(request.picUrls());
-        post.setCountryCode(request.country());
-        post.setStateCode(request.state());
-        post.setCityCode(request.city());
+        post.setCountry(request.country());
+        post.setState(request.state());
+        post.setCity(request.city());
         post.setArea(request.area());
         post.setPrice(request.price());
         post.setUpdateTime(new Date());
