@@ -50,7 +50,7 @@ public class GetMyPostList implements RequestHandler<APIGatewayProxyRequestEvent
         Request request = gson.fromJson(event.getBody(), Request.class);
 
         List<Post> postList = dynamoDBMapper.scan(Post.class, new DynamoDBScanExpression());
-        List<Post> resultListUnPaged = postList.stream().filter(post -> post.getUserId() != null && post.getUserId().equals(username)).toList();
+        List<Post> resultListUnPaged = postList.stream().filter(post -> post.getDeleteFlag() == 0).filter(post -> post.getUserId() != null && post.getUserId().equals(username)).toList();
         // pagination
         int fromIdx = request.pageNum() * request.pageSize();
         int toIdx = (request.pageNum() * request.pageSize() + request.pageSize());
